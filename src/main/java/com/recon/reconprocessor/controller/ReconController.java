@@ -1,5 +1,7 @@
 package com.recon.reconprocessor.controller;
 
+import com.recon.reconprocessor.dto.ChatRequest;
+import com.recon.reconprocessor.dto.ChatResponse;
 import com.recon.reconprocessor.model.ReconFile;
 import com.recon.reconprocessor.service.ReadingService;
 import java.io.BufferedReader;
@@ -9,12 +11,16 @@ import java.net.URL;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.wildfly.common.annotation.NotNull;
 
@@ -25,6 +31,16 @@ public class ReconController {
 
   @NotNull
   private final ReadingService readingService;
+
+  @Qualifier("openaiRestTemplate")
+  @Autowired
+  private RestTemplate restTemplate;
+
+  @Value("${openai.model}")
+  private String model;
+
+  @Value("${openai.api.url}")
+  private String apiUrl;
 
   @GetMapping("/test")
   ResponseEntity<String> getTest() {
@@ -71,5 +87,18 @@ public class ReconController {
   public ResponseEntity<List<ReconFile>> getAllFiles(
       @RequestParam Integer flag) {
     return ResponseEntity.ok(readingService.getAllFile(flag));
+  }
+
+  @GetMapping("/chat")
+  public String chat(@RequestParam String prompt) {
+    // create a request
+    ChatRequest request = new ChatRequest(model, prompt);
+    // call the API
+    ChatResponse response = restTemplate.postForObject(apiUrl, request, ChatResponse.class);
+    if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+      return "No response";
+    }
+    // return the first response
+    return response.getChoices().get(0).getMessage().getContent();
   }
 }
