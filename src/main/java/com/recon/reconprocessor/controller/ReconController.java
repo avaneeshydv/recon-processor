@@ -42,6 +42,9 @@ public class ReconController {
   @Value("${openai.api.url}")
   private String apiUrl;
 
+  @Value("${openai.api.key}")
+  private String key;
+
   @GetMapping("/test")
   ResponseEntity<String> getTest() {
     return ResponseEntity.ok("success");
@@ -66,6 +69,7 @@ public class ReconController {
     ChatRequest request = new ChatRequest(model, prompt);
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.setBearerAuth(key);
     var requestEntity =
         new HttpEntity<>(new Gson().toJson(request), headers);
     // call the API
