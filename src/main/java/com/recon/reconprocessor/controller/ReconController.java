@@ -9,6 +9,6 @@ public class ReconController {
 
   @GetMapping("/test")
   ResponseEntity<String> getTest() {
-    ResponseEntity.ok("success");
+    return ResponseEntity.ok("success");
   }
 }
