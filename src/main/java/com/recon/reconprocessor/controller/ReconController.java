@@ -5,11 +5,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import org.json.JSONObject;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@SpringBootApplication
+
 public class ReconController {
 
   @GetMapping("/test")
@@ -23,7 +26,7 @@ public class ReconController {
 
     con.setRequestMethod("POST");
     con.setRequestProperty("Content-Type", "application/json");
-    con.setRequestProperty("Authorization", "Bearer YOUR-API-KEY");
+    con.setRequestProperty("Authorization", "Bearer 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");
 
     JSONObject data = new JSONObject();
     data.put("model", "text-davinci-003");
@@ -41,6 +44,6 @@ public class ReconController {
   }
 
   public static void main(String[] args) throws Exception {
-    chatGPT("Hello, how are you?");
+    chatGPT("I'm also good bro?");
   }
 }
