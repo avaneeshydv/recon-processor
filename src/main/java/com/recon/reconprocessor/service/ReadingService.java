@@ -38,7 +38,7 @@ public class ReadingService {
 
   public void uploadAndProcessFile(MultipartFile multipart, Integer flag) {
     BufferedReader br;
-    List<String> result = new ArrayList<>();
+    var result = new ArrayList<String>();
     try {
       String line;
       var is = multipart.getInputStream();
@@ -60,7 +60,7 @@ public class ReadingService {
       }
       reconFile.setRowsRead(rows);
       reconFileRepository.saveAndFlush(reconFile);
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("error ", e);
     }
   }

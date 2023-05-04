@@ -6,6 +6,8 @@ import com.recon.reconprocessor.service.ReadingService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +41,9 @@ public class ReconController {
   @GetMapping("/getFile")
   public ResponseEntity<List<ReconFile>> getAllFiles(
       @RequestParam Integer flag) {
-    return ResponseEntity.ok(readingService.getAllFile(flag));
+    HttpHeaders responseHeaders = new HttpHeaders();
+    responseHeaders.set("Access-Control-Allow-Origin", "*");
+    return new ResponseEntity<>(readingService.getAllFile(flag),
+        responseHeaders, HttpStatus.OK);
   }
 }
