@@ -1,15 +1,12 @@
 package com.recon.reconprocessor.controller;
 
+import com.recon.reconprocessor.model.ReconFile;
 import com.recon.reconprocessor.service.ReadingService;
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -40,7 +37,8 @@ public class ReconController {
 
     con.setRequestMethod("POST");
     con.setRequestProperty("Content-Type", "application/json");
-    con.setRequestProperty("Authorization", "Bearer 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");
+    con.setRequestProperty("Authorization",
+        "Bearer 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");
 
     JSONObject data = new JSONObject();
     data.put("model", "text-davinci-003");
@@ -54,7 +52,8 @@ public class ReconController {
     String output = new BufferedReader(new InputStreamReader(con.getInputStream())).lines()
         .reduce((a, b) -> a + b).get();
 
-    System.out.println(new JSONObject(output).getJSONArray("choices").getJSONObject(0).getString("text"));
+    System.out.println(
+        new JSONObject(output).getJSONArray("choices").getJSONObject(0).getString("text"));
   }
 
   public static void main(String[] args) throws Exception {
@@ -63,8 +62,14 @@ public class ReconController {
 
   @PostMapping("/upload")
   public ResponseEntity<String> getUpload(@RequestParam MultipartFile multipart,
-                                          @RequestParam String flag) {
-    readingService.readService(multipart, flag);
+                                          @RequestParam Integer flag) {
+    readingService.uploadAndProcessFile(multipart, flag);
     return ResponseEntity.ok("file upload successfully");
+  }
+
+  @GetMapping("/getFile")
+  public ResponseEntity<List<ReconFile>> getAllFiles(
+      @RequestParam Integer flag) {
+    return ResponseEntity.ok(readingService.getAllFile(flag));
   }
 }
