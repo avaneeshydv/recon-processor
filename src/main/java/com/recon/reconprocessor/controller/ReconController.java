@@ -1,19 +1,33 @@
 package com.recon.reconprocessor.controller;
 
+import com.recon.reconprocessor.service.ReadingService;
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.wildfly.common.annotation.NotNull;
 
 @RestController
 @SpringBootApplication
-
+@RequiredArgsConstructor
 public class ReconController {
+
+  @NotNull
+  private final ReadingService readingService;
 
   @GetMapping("/test")
   ResponseEntity<String> getTest() {
@@ -45,5 +59,12 @@ public class ReconController {
 
   public static void main(String[] args) throws Exception {
     chatGPT("I'm also good bro?");
+  }
+
+  @PostMapping("/upload")
+  public ResponseEntity<String> getUpload(@RequestParam MultipartFile multipart,
+                                          @RequestParam String flag) {
+    readingService.readService(multipart, flag);
+    return ResponseEntity.ok("file upload successfully");
   }
 }
