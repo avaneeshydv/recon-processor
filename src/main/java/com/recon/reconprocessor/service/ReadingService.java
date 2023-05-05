@@ -94,10 +94,10 @@ public class ReadingService {
       var reconData = new ReconData();
       if (flag == 1) {
         reconData.setRecFileIdOne(reconFile.getId());
-        reconData.setFileDataOne(line);
+        reconData.setFileDataOne(line.replaceAll("\t",","));
       } else {
         reconData.setRecFileIdTwo(reconFile.getId());
-        reconData.setFileDataTwo(line);
+        reconData.setFileDataTwo(line.replaceAll("\t",","));
       }
       dataRepository.saveAndFlush(reconData);
     } catch (Exception e) {
