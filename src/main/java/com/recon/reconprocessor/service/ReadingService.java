@@ -53,7 +53,13 @@ public class ReadingService {
       var mandatoryColumns = getMandatoryColumns(columnsRequired);
       reconFile.setReqColumns(mandatoryColumns);
       reconFile.setRowsRead(dataList.size());
-      reconFileRepository.saveAndFlush(reconFile);
+      var data = reconFileRepository.saveAndFlush(reconFile);
+      var threadPool = getThreadPoolTaskExecutor();
+      dataList.forEach(dt -> {
+        threadPool.execute(() -> {
+          saveDataInDb(flag, dt, data);
+        });
+      });
     } catch (Exception e) {
       log.error("error ", e);
     }
@@ -83,11 +89,20 @@ public class ReadingService {
         "");
   }
 
-  public void saveDataInDb(String line, ReconFile reconFile) {
-    var reconData = new ReconData();
-    reconData.setFileDataOne(line);
-    reconData.setRecFileId(reconFile.getId());
-    dataRepository.saveAndFlush(reconData);
+  public void saveDataInDb(Integer flag, String line, ReconFile reconFile) {
+    try {
+      var reconData = new ReconData();
+      if (flag == 1) {
+        reconData.setRecFileIdOne(reconFile.getId());
+        reconData.setFileDataOne(line);
+      } else {
+        reconData.setRecFileIdTwo(reconFile.getId());
+        reconData.setFileDataTwo(line);
+      }
+      dataRepository.saveAndFlush(reconData);
+    } catch (Exception e) {
+      log.error("Error ", e);
+    }
   }
 
   public List<ReconFile> getAllFile(Integer fileFlag) {
