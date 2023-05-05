@@ -21,6 +21,4 @@ public class ReconData {
   private BigInteger recFileId;
   @Column
   private String fileData;
-  @Column
-  private BigInteger percent;
 }
