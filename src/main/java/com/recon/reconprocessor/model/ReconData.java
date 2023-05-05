@@ -18,13 +18,9 @@ public class ReconData {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private BigInteger id;
   @Column
-  private BigInteger recFileIdOne;
+  private BigInteger recFileId;
   @Column
-  private String fileDataOne;
-  @Column
-  private BigInteger recFileIdTwo;
-  @Column
-  private String fileDataTwo;
+  private String fileData;
   @Column
   private BigInteger percent;
 }

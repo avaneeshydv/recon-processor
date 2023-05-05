@@ -57,7 +57,7 @@ public class ReadingService {
       var threadPool = getThreadPoolTaskExecutor();
       dataList.forEach(dt -> {
         threadPool.execute(() -> {
-          saveDataInDb(flag, dt, data);
+          saveDataInDb(dt, data);
         });
       });
     } catch (Exception e) {
@@ -89,16 +89,11 @@ public class ReadingService {
         "");
   }
 
-  public void saveDataInDb(Integer flag, String line, ReconFile reconFile) {
+  public void saveDataInDb(String line, ReconFile reconFile) {
     try {
       var reconData = new ReconData();
-      if (flag == 1) {
-        reconData.setRecFileIdOne(reconFile.getId());
-        reconData.setFileDataOne(line.replaceAll("\t", ","));
-      } else {
-        reconData.setRecFileIdTwo(reconFile.getId());
-        reconData.setFileDataTwo(line.replaceAll("\t", ","));
-      }
+      reconData.setRecFileId(reconFile.getId());
+      reconData.setFileData(line.replaceAll("\t", ","));
       dataRepository.saveAndFlush(reconData);
     } catch (Exception e) {
       log.error("Error ", e);
