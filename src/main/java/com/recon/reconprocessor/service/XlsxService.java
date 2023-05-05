@@ -22,7 +22,6 @@ public class XlsxService implements FileHandlerService {
   @NotNull
   private final FileUtil fileUtil;
 
-
   @Override
   public List<String> readFileData(InputStream inputStream, int sheetNum) {
     String fileDataString;

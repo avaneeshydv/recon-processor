@@ -85,7 +85,7 @@ public class FileUtil {
    * method to generate admin file path.
    *
    * @param folderName name of folder
-   * @param date current date
+   * @param date       current date
    * @return String
    */
   public String generateAdminFilePath(String folderName, LocalDate date) {
@@ -105,7 +105,7 @@ public class FileUtil {
    * method to get file path.
    *
    * @param folderName name of folder
-   * @param date date
+   * @param date       date
    * @return String which denotes path
    */
   private String getFilePath(String folderName, LocalDate date) {
@@ -114,16 +114,16 @@ public class FileUtil {
     }
     var optionalFilePath = "";
     if (StringUtils.isNotBlank(folderName)) {
-      optionalFilePath = folderName + FileConstant.FORWARD_SLASH_CHAR;
+      optionalFilePath = folderName + ReconConstant.FORWARD_SLASH_CHAR;
     }
     var subPath = fileSubPath;
-    var filePath = prependAdminPath(date.getYear() + FileConstant.FORWARD_SLASH_STRING
+    var filePath = prependAdminPath(date.getYear() + ReconConstant.FORWARD_SLASH_STRING
         + (date.getMonthValue() < 10 ? "0" + date.getMonthValue()
         : String.valueOf(date.getMonthValue()))
-        + FileConstant.FORWARD_SLASH_STRING
+        + ReconConstant.FORWARD_SLASH_STRING
         + (date.getDayOfMonth() < 10 ? "0" + date.getDayOfMonth()
         : String.valueOf(date.getDayOfMonth()))
-        + FileConstant.FORWARD_SLASH_STRING + subPath + FileConstant.FORWARD_SLASH_CHAR
+        + ReconConstant.FORWARD_SLASH_STRING + subPath + ReconConstant.FORWARD_SLASH_CHAR
         + optionalFilePath);
     var directoryCreated = createFolderAndSetPermission(filePath);
     log.info("Directory : " + filePath + " created for first time: " + directoryCreated);
@@ -146,10 +146,10 @@ public class FileUtil {
       log.info("File Admin Base path does not exists: " + basePath);
       return false;
     }
-    String[] pathArray = pathToBeChecked.split(FileConstant.FORWARD_SLASH_STRING);
+    String[] pathArray = pathToBeChecked.split(ReconConstant.FORWARD_SLASH_STRING);
     var tempPath = new StringBuilder();
     for (var i = 0; i < pathArray.length; i++) {
-      tempPath.append(pathArray[i] + FileConstant.FORWARD_SLASH_CHAR);
+      tempPath.append(pathArray[i] + ReconConstant.FORWARD_SLASH_CHAR);
       fileHandle = new File(basePath + tempPath);
       if (!fileHandle.exists() || !fileHandle.isDirectory()) {
         var f = new File(basePath + tempPath);
@@ -203,15 +203,15 @@ public class FileUtil {
    * @return String which contains the path from where the file is to be read.
    */
   public String dateWiseSftpReadPath(String basePath) {
-    return basePath + LocalDate.now().getYear() + FileConstant.FORWARD_SLASH_STRING
+    return basePath + LocalDate.now().getYear() + ReconConstant.FORWARD_SLASH_STRING
         + (LocalDate.now().getMonthValue() < 10
         ? "0" + LocalDate.now().getMonthValue()
         : String.valueOf(LocalDate.now().getMonthValue()))
-        + FileConstant.FORWARD_SLASH_STRING
+        + ReconConstant.FORWARD_SLASH_STRING
         + (LocalDate.now().getDayOfMonth() < 10
         ? "0" + LocalDate.now().getDayOfMonth()
         : String.valueOf(LocalDate.now().getDayOfMonth()))
-        + FileConstant.FORWARD_SLASH_STRING;
+        + ReconConstant.FORWARD_SLASH_STRING;
   }
 
   /**
@@ -235,7 +235,7 @@ public class FileUtil {
   /**
    * function to get xls and xlsx file content from a sheet.
    *
-   * @param sheet sheet
+   * @param sheet       sheet
    * @param datePattern datePattern
    * @return String.
    */
@@ -254,7 +254,7 @@ public class FileUtil {
       rowCounter = 0;
       var row = sheet.getRow(i);
       plainRowData.append(getPlainRowData(lineData, plainRowData, rowCounter, row, datePattern));
-      if (null == row || plainRowData.length() < FileConstant.MINIMUM_LENGTH_OF_ROW_DATA_IN_FILE) {
+      if (null == row || plainRowData.length() < ReconConstant.MINIMUM_LENGTH_OF_ROW_DATA_IN_FILE) {
         if (prevEmptyRowNum.equals(i - 1)) {
           emptyRowCount++;
         } else {
@@ -262,10 +262,10 @@ public class FileUtil {
         }
         prevEmptyRowNum = i;
       }
-      if (FileConstant.MAXIMUM_EMPTY_ROWS_IN_FILE.equals(emptyRowCount)) {
+      if (ReconConstant.MAXIMUM_EMPTY_ROWS_IN_FILE.equals(emptyRowCount)) {
         fileDataBuilder.append("Stopped reading file further due to consecutive "
-            + FileConstant.MAXIMUM_EMPTY_ROWS_IN_FILE + " rows with less than "
-            + FileConstant.MINIMUM_LENGTH_OF_ROW_DATA_IN_FILE + " characters\n");
+            + ReconConstant.MAXIMUM_EMPTY_ROWS_IN_FILE + " rows with less than "
+            + ReconConstant.MINIMUM_LENGTH_OF_ROW_DATA_IN_FILE + " characters\n");
         break;
       }
       if (lineData.length() > 0) {
@@ -281,11 +281,11 @@ public class FileUtil {
   /**
    * function to get row data.
    *
-   * @param lineData lineData
+   * @param lineData     lineData
    * @param plainRowData plainRowData
-   * @param rowCounter rowCounter
-   * @param row row
-   * @param datePattern datePattern
+   * @param rowCounter   rowCounter
+   * @param row          row
+   * @param datePattern  datePattern
    * @return StringBuilder
    */
   private StringBuilder getPlainRowData(StringBuilder lineData, StringBuilder plainRowData,
@@ -301,7 +301,7 @@ public class FileUtil {
           value = "";
         } else if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
           value = TimeUtil.formatDate(
-              cell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+              cell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
               TimeUtil.getDateTimeFormatter(datePattern));
         } else {
           var formatter = new DataFormatter(Locale.US);
@@ -319,7 +319,7 @@ public class FileUtil {
   /**
    * method to keep a file into a dir.
    *
-   * @param filesData data
+   * @param filesData     data
    * @param localFilePath path
    * @throws IOException exception
    */

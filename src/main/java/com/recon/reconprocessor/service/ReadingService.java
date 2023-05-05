@@ -4,14 +4,10 @@ import com.recon.reconprocessor.model.ReconData;
 import com.recon.reconprocessor.model.ReconFile;
 import com.recon.reconprocessor.repository.DataRepository;
 import com.recon.reconprocessor.repository.ReconFileRepository;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +22,10 @@ public class ReadingService {
   private final ReconFileRepository reconFileRepository;
   @NotNull
   private final DataRepository dataRepository;
+  @NotNull
+  private final XlsxService xlsxService;
+  @NotNull
+  private final OpenAiService openAiService;
 
   private ThreadPoolTaskExecutor getThreadPoolTaskExecutor() {
     var executor = new ThreadPoolTaskExecutor();
@@ -37,32 +37,50 @@ public class ReadingService {
   }
 
   public void uploadAndProcessFile(MultipartFile multipart, Integer flag) {
-    BufferedReader br;
-    var result = new ArrayList<String>();
     try {
-      String line;
-      var is = multipart.getInputStream();
-      br = new BufferedReader(new InputStreamReader(is));
       ReconFile file = new ReconFile();
-      file.setName(multipart.getName());
-      int rows = 0;
-      file.setRowsRead(rows);
+      file.setName(multipart.getOriginalFilename());
       file.setFileFlag(flag);
       var reconFile = reconFileRepository.saveAndFlush(file);
-      while ((line = br.readLine()) != null) {
-        rows++;
-        String finalLine = line;
-        result.add(finalLine);
-        var threadPoolTaskExecutor = getThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.execute(() -> {
-          saveDataInDb(finalLine, reconFile);
-        });
-      }
-      reconFile.setRowsRead(rows);
+      var dataList = xlsxService.readFileData(multipart.getInputStream(), 0);
+      // ask OPEN AI to get type of dock
+      var type = getTypeOfDocument(dataList.get(0));
+      reconFile.setType(type);
+      // ask Open API to give mandatory column to recon
+      var columnsRequiredMetaData =
+          StringUtils.substringBetween(type, "  <option value=\"", "</option>");
+      var columnsRequired = columnsRequiredMetaData.split("\">")[0];
+      var mandatoryColumns = getMandatoryColumns(columnsRequired);
+      reconFile.setReqColumns(mandatoryColumns);
+      reconFile.setRowsRead(dataList.size());
       reconFileRepository.saveAndFlush(reconFile);
     } catch (Exception e) {
       log.error("error ", e);
     }
+  }
+
+  private String getTypeOfDocument(String headers) {
+    var question = ReconConstant.FILE_TYPE_QUESTION.replace("{dataList}",
+        headers);
+    question = question.replace("\t", ",");
+    var answer = openAiService.chat(question);
+    while (Boolean.FALSE.equals(StringUtils.contains(answer, "<"))) {
+      answer = openAiService.chat(question);
+    }
+    return StringUtils.replace(StringUtils.substringBetween(answer, "<select>", "</select>"), "\n",
+        "");
+  }
+
+  private String getMandatoryColumns(String fileType) {
+    var question = ReconConstant.MANDATORY_COLUMNS.replace("{fileType}",
+        fileType);
+    question = question.replace("\t", ",");
+    var answer = openAiService.chat(question);
+    while (Boolean.FALSE.equals(StringUtils.contains(answer, "<"))) {
+      answer = openAiService.chat(question);
+    }
+    return StringUtils.replace(StringUtils.substringBetween(answer, "<table>", "</table>"), "\n",
+        "");
   }
 
   public void saveDataInDb(String line, ReconFile reconFile) {
