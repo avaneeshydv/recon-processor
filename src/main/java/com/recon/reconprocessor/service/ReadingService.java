@@ -41,19 +41,19 @@ public class ReadingService {
       ReconFile file = new ReconFile();
       file.setName(multipart.getOriginalFilename());
       file.setFileFlag(flag);
-      var reconFile = reconFileRepository.saveAndFlush(file);
       var dataList = xlsxService.readFileData(multipart.getInputStream(), 0);
       // ask OPEN AI to get type of dock
       var type = getTypeOfDocument(dataList.get(0));
-      reconFile.setType(type);
+      file.setType(type);
       // ask Open API to give mandatory column to recon
       var columnsRequiredMetaData =
           StringUtils.substringBetween(type, "  <option value=\"", "</option>");
       var columnsRequired = columnsRequiredMetaData.split("\">")[0];
       var mandatoryColumns = getMandatoryColumns(columnsRequired);
-      reconFile.setReqColumns(mandatoryColumns);
-      reconFile.setRowsRead(dataList.size());
-      var data = reconFileRepository.saveAndFlush(reconFile);
+      file.setReqColumns(mandatoryColumns);
+      file.setRowsRead(dataList.size());
+      var data = reconFileRepository.saveAndFlush(file);
+      dataList.remove(0);
       var threadPool = getThreadPoolTaskExecutor();
       dataList.forEach(dt -> {
         threadPool.execute(() -> {
@@ -94,10 +94,10 @@ public class ReadingService {
       var reconData = new ReconData();
       if (flag == 1) {
         reconData.setRecFileIdOne(reconFile.getId());
-        reconData.setFileDataOne(line.replaceAll("\t",","));
+        reconData.setFileDataOne(line.replaceAll("\t", ","));
       } else {
         reconData.setRecFileIdTwo(reconFile.getId());
-        reconData.setFileDataTwo(line.replaceAll("\t",","));
+        reconData.setFileDataTwo(line.replaceAll("\t", ","));
       }
       dataRepository.saveAndFlush(reconData);
     } catch (Exception e) {
